@@ -234,6 +234,48 @@ body {
   color: var(--fg);
   opacity: 0.7;
 }
+#leaderboard {
+  width: 100%;
+  max-width: 280px;
+  margin: 8px auto 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lb-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  font-size: 0.85rem;
+}
+.lb-row.current {
+  border-color: var(--accent);
+  background: rgba(255, 107, 53, 0.12);
+}
+.lb-rank {
+  font-family: 'Bungee', cursive;
+  font-size: 1.1rem;
+  min-width: 28px;
+  text-align: center;
+}
+.lb-rank.r1 { color: #ffd700; }
+.lb-rank.r2 { color: #c0c0c0; }
+.lb-rank.r3 { color: #cd7f32; }
+.lb-rank.r4 { color: var(--fg); opacity: 0.5; }
+.lb-name {
+  flex: 1;
+  font-weight: 600;
+  color: var(--fg);
+}
+.lb-score {
+  font-family: 'Bungee', cursive;
+  color: var(--accent2);
+  font-size: 0.85rem;
+}
 .go-btn {
   background: var(--accent);
   color: #fff;
@@ -342,7 +384,7 @@ body {
 <div id="gameover-screen">
   <h2>HẾT XĂNG!</h2>
   <div class="final-score" id="final-score"></div>
-  <div class="best-score" id="best-score"></div>
+  <div id="leaderboard"></div>
   <button class="go-btn" id="retry-btn">CHƠI LẠI</button>
   <button class="go-btn" id="home-btn" style="background:var(--card-border)">ĐỔI NHÂN VẬT</button>
 </div>
@@ -1456,13 +1498,30 @@ class Game {
     gameoverScreen.style.display = 'flex';
     document.getElementById('final-score').textContent = `Quãng đường: ${this.score}m`;
 
-    let best = 0;
-    try { best = parseInt(localStorage.getItem('moto_best') || '0'); } catch(e) {}
-    if (this.score > best) {
-      best = this.score;
-      try { localStorage.setItem('moto_best', best.toString()); } catch(e) {}
+    let records = {};
+    try { records = JSON.parse(localStorage.getItem('moto_records') || '{}'); } catch(e) {}
+    const curName = this.charData.name;
+    if (!records[curName] || this.score > records[curName]) {
+      records[curName] = this.score;
     }
-    document.getElementById('best-score').textContent = `Kỷ lục: ${best}m`;
+    for (const c of CHARS) {
+      if (!records[c.name]) records[c.name] = 0;
+    }
+    try { localStorage.setItem('moto_records', JSON.stringify(records)); } catch(e) {}
+
+    const sorted = CHARS.map(c => ({ name: c.name, score: records[c.name] || 0 }))
+      .sort((a, b) => b.score - a.score);
+    const medals = ['🥇', '🥈', '🥉', '4'];
+    const lb = document.getElementById('leaderboard');
+    lb.innerHTML = sorted.map((entry, i) => {
+      const isCurrent = entry.name === curName;
+      const rankClass = `r${i + 1}`;
+      return `<div class="lb-row${isCurrent ? ' current' : ''}">
+        <span class="lb-rank ${rankClass}">${medals[i]}</span>
+        <span class="lb-name">${entry.name}</span>
+        <span class="lb-score">${entry.score}m</span>
+      </div>`;
+    }).join('');
   }
 
   loop() {
