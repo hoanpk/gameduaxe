@@ -452,17 +452,40 @@ const CHARS = [
 
 const OBSTACLES = [
   { type: 'rock', emoji: '🪨', w: 40, h: 30, dmg: 15, zone: 'ground', desc: 'Đá' },
-  { type: 'barrel', emoji: '🛢️', w: 35, h: 40, dmg: 20, zone: 'ground', desc: 'Thùng phuy' },
-  { type: 'oil', emoji: '🫗', w: 50, h: 15, dmg: 10, zone: 'ground', desc: 'Dầu loang' },
-  { type: 'sign', emoji: '⚠️', w: 45, h: 35, dmg: 18, zone: 'high', desc: 'Biển báo' },
-  { type: 'branch', emoji: '🌿', w: 55, h: 25, dmg: 12, zone: 'high', desc: 'Cành cây' },
-  { type: 'cone', emoji: '🔺', w: 30, h: 35, dmg: 10, zone: 'ground', desc: 'Cọc tiêu' },
 ];
 
 const REWARDS = [
   { type: 'heart', emoji: '❤️', w: 30, h: 30, heal: 20, desc: '+20 HP' },
   { type: 'shield', emoji: '🛡️', w: 30, h: 30, heal: 0, shield: 3000, desc: 'Bất tử 3s' },
   { type: 'star', emoji: '⭐', w: 28, h: 28, heal: 0, score: 500, desc: '+500 điểm' },
+];
+
+const DRINKS_GOOD = [
+  { type: 'coffee', emoji: '☕', w: 32, h: 32, heal: 10, score: 150, desc: 'Cà phê +10 HP', drink: true },
+  { type: 'coca', emoji: '🥤', w: 30, h: 34, heal: 8, score: 100, desc: 'Coca +8 HP', drink: true },
+];
+
+const DRINKS_BAD = [
+  { type: 'beer', emoji: '🍺', w: 32, h: 34, dmg: 15, zone: 'ground', desc: 'Bia -15 HP', drink: true },
+  { type: 'wine', emoji: '🍷', w: 30, h: 34, dmg: 18, zone: 'ground', desc: 'Rượu -18 HP', drink: true },
+];
+
+const GOOD_FRUITS = [
+  { type: 'banana', emoji: '🍌', w: 32, h: 32, score: 120, desc: 'Chuối +120đ', fruit: 'good' },
+  { type: 'apple', emoji: '🍏', w: 30, h: 30, score: 100, desc: 'Táo +100đ', fruit: 'good' },
+  { type: 'orange', emoji: '🍊', w: 30, h: 30, score: 100, desc: 'Cam +100đ', fruit: 'good' },
+  { type: 'watermelon', emoji: '🍉', w: 34, h: 34, score: 200, desc: 'Dưa hấu +200đ', fruit: 'good' },
+  { type: 'grape', emoji: '🍇', w: 30, h: 30, score: 150, desc: 'Nho +150đ', fruit: 'good' },
+  { type: 'mango', emoji: '🥭', w: 32, h: 32, score: 180, desc: 'Xoài +180đ', fruit: 'good' },
+  { type: 'jackfruit', emoji: '🍈', w: 36, h: 36, score: 250, desc: 'Mít +250đ', fruit: 'good' },
+  { type: 'peach', emoji: '🍑', w: 30, h: 30, score: 130, desc: 'Đào +130đ', fruit: 'good' },
+];
+
+const BAD_FRUITS = [
+  { type: 'pepper', emoji: '🌶️', w: 30, h: 30, dmg: 10, zone: 'ground', desc: 'Ớt -10 HP', fruit: 'bad' },
+  { type: 'mushroom', emoji: '🍄', w: 30, h: 32, dmg: 12, zone: 'ground', desc: 'Nấm độc -12 HP', fruit: 'bad' },
+  { type: 'lemon', emoji: '🍋', w: 28, h: 28, dmg: 8, zone: 'ground', desc: 'Chanh chua -8 HP', fruit: 'bad' },
+  { type: 'chestnut', emoji: '🌰', w: 28, h: 28, dmg: 10, zone: 'ground', desc: 'Hạt dẻ -10 HP', fruit: 'bad' },
 ];
 
 const FIERCE_ANIMALS = [
@@ -644,6 +667,8 @@ class Game {
     this.frameId = null;
     this.swipeStart = null;
     this.touchId = null;
+    this.barriers = [];
+    this.initBarriers();
 
     this.onTouchStart = this.onTouchStart.bind(this);
     this.onTouchMove = this.onTouchMove.bind(this);
@@ -751,6 +776,10 @@ class Game {
 
   moveLeft() {
     if (this.playerLane > 0) {
+      if (!this.canChangeLane(this.playerLane, this.playerLane - 1)) {
+        this.showPopup('⛔ Vạch liền!', '#ff9800', 500);
+        return;
+      }
       this.playerLane--;
       this.bikeTargetAngle = -15;
       setTimeout(() => this.bikeTargetAngle = 0, 300);
@@ -759,6 +788,10 @@ class Game {
 
   moveRight() {
     if (this.playerLane < 2) {
+      if (!this.canChangeLane(this.playerLane, this.playerLane + 1)) {
+        this.showPopup('⛔ Vạch liền!', '#ff9800', 500);
+        return;
+      }
       this.playerLane++;
       this.bikeTargetAngle = 15;
       setTimeout(() => this.bikeTargetAngle = 0, 300);
@@ -781,6 +814,56 @@ class Game {
     }
   }
 
+  initBarriers() {
+    this.barriers = [];
+    const segH = 120;
+    for (let div = 0; div < 2; div++) {
+      for (let y = -segH; y < this.h + segH; y += segH) {
+        this.barriers.push({
+          divider: div,
+          y: y,
+          height: segH,
+          solid: Math.random() < 0.35
+        });
+      }
+    }
+  }
+
+  updateBarriers() {
+    const segH = 120;
+    for (let i = this.barriers.length - 1; i >= 0; i--) {
+      this.barriers[i].y += this.speed;
+      if (this.barriers[i].y > this.h + segH) {
+        this.barriers.splice(i, 1);
+      }
+    }
+    for (let div = 0; div < 2; div++) {
+      let minY = this.h;
+      for (const b of this.barriers) {
+        if (b.divider === div && b.y < minY) minY = b.y;
+      }
+      while (minY > -segH) {
+        minY -= segH;
+        this.barriers.push({
+          divider: div,
+          y: minY,
+          height: segH,
+          solid: Math.random() < 0.35
+        });
+      }
+    }
+  }
+
+  canChangeLane(fromLane, toLane) {
+    const divider = Math.min(fromLane, toLane);
+    const py = this.h - 120;
+    for (const b of this.barriers) {
+      if (b.divider !== divider) continue;
+      if (py >= b.y && py <= b.y + b.height && b.solid) return false;
+    }
+    return true;
+  }
+
   spawnItem() {
     this.spawnTimer++;
     const interval = Math.max(30, this.spawnInterval - this.distance * 0.002);
@@ -789,31 +872,24 @@ class Game {
 
     const lane = Math.floor(Math.random() * 3);
     const roll = Math.random();
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 
-    if (roll < 0.20) {
-      const r = REWARDS[Math.floor(Math.random() * REWARDS.length)];
-      this.items.push({ ...r, lane, y: -50, isReward: true, collected: false });
-    } else if (roll < 0.42) {
-      const a = FRIENDLY_ANIMALS[Math.floor(Math.random() * FRIENDLY_ANIMALS.length)];
-      this.items.push({ ...a, lane, y: -50, isReward: true, collected: false });
+    if (roll < 0.12) {
+      this.items.push({ ...pick(REWARDS), lane, y: -50, isReward: true, collected: false });
+    } else if (roll < 0.26) {
+      this.items.push({ ...pick(FRIENDLY_ANIMALS), lane, y: -50, isReward: true, collected: false });
+    } else if (roll < 0.40) {
+      this.items.push({ ...pick(GOOD_FRUITS), lane, y: -50, isReward: true, collected: false });
+    } else if (roll < 0.48) {
+      this.items.push({ ...pick(DRINKS_GOOD), lane, y: -50, isReward: true, collected: false });
+    } else if (roll < 0.58) {
+      this.items.push({ ...pick(OBSTACLES), lane, y: -50, isReward: false, collected: false });
     } else if (roll < 0.72) {
-      const o = OBSTACLES[Math.floor(Math.random() * OBSTACLES.length)];
-      this.items.push({ ...o, lane, y: -50, isReward: false, collected: false });
+      this.items.push({ ...pick(FIERCE_ANIMALS), lane, y: -50, isReward: false, collected: false });
+    } else if (roll < 0.84) {
+      this.items.push({ ...pick(BAD_FRUITS), lane, y: -50, isReward: false, collected: false });
     } else {
-      const f = FIERCE_ANIMALS[Math.floor(Math.random() * FIERCE_ANIMALS.length)];
-      this.items.push({ ...f, lane, y: -50, isReward: false, collected: false });
-    }
-
-    if (Math.random() < 0.15 && this.distance > 500) {
-      const lane2 = (lane + 1 + Math.floor(Math.random() * 2)) % 3;
-      const o2 = OBSTACLES[Math.floor(Math.random() * OBSTACLES.length)];
-      this.items.push({
-        ...o2,
-        lane: lane2,
-        y: -50,
-        isReward: false,
-        collected: false
-      });
+      this.items.push({ ...pick(DRINKS_BAD), lane, y: -50, isReward: false, collected: false });
     }
   }
 
@@ -824,11 +900,11 @@ class Game {
     const iy = item.y;
 
     const dist = Math.sqrt((px - ix) ** 2 + (py - iy) ** 2);
-    if (dist > 70) return false;
+    if (dist > 55) return false;
 
     if (item.isReward) return true;
 
-    if (item.zone === 'ground' && this.playerState === 'jump' && this.jumpY > 30) return false;
+    if (item.zone === 'ground' && this.playerState === 'jump' && this.jumpY > 10) return false;
     if (item.zone === 'high' && this.playerState === 'duck') return false;
 
     return true;
@@ -847,13 +923,13 @@ class Game {
     }
   }
 
-  showPopup(text, color) {
+  showPopup(text, color, duration = 800) {
     const el = document.createElement('div');
     el.className = 'combo-popup';
     el.textContent = text;
     el.style.color = color;
     document.body.appendChild(el);
-    setTimeout(() => el.remove(), 800);
+    setTimeout(() => el.remove(), duration);
   }
 
   flashScreen(color) {
@@ -896,6 +972,7 @@ class Game {
     const targetX = this.roadL + this.laneWidth * this.playerLane + this.laneWidth / 2;
     this.playerX += (targetX - this.playerX) * 0.15;
 
+    this.updateBarriers();
     this.spawnItem();
 
     for (let i = this.items.length - 1; i >= 0; i--) {
@@ -918,12 +995,13 @@ class Game {
           }
           if (item.score) {
             this.score += item.score;
-            this.showPopup(item.desc, '#ffd166');
+            if (!item.heal) this.showPopup(item.desc, item.fruit === 'good' ? '#4caf50' : '#ffd166');
             SFX.coin();
           }
+          const pColor = item.fruit === 'good' ? '#4caf50' : item.drink ? '#29b6f6' : '#ffd166';
           this.addParticle(
             this.roadL + this.laneWidth * item.lane + this.laneWidth / 2,
-            item.y, '#ffd166', 8
+            item.y, pColor, 8
           );
         } else {
           if (Date.now() < this.shieldEnd) {
@@ -936,7 +1014,7 @@ class Game {
           } else {
             this.hp -= item.dmg;
             this.combo = 0;
-            this.showPopup(`-${item.dmg} HP`, '#ef476f');
+            this.showPopup(item.desc || `-${item.dmg} HP`, item.fruit === 'bad' ? '#f44336' : '#ef476f');
             this.flashScreen('rgba(239, 71, 111, 0.4)');
             item.animal ? SFX.animalFierce() : SFX.hit();
             this.addParticle(
@@ -1051,19 +1129,25 @@ class Game {
       }
     }
 
-    ctx.strokeStyle = dark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([15, 25]);
-    for (let i = 1; i < 3; i++) {
-      const x = roadL + (roadW / 3) * i;
-      ctx.beginPath();
-      for (let y = -40 + grassOff; y < this.h + 40; y += 40) {
-        ctx.moveTo(x, y);
-        ctx.lineTo(x, y + 15);
+    for (const b of this.barriers) {
+      const x = roadL + (roadW / 3) * (b.divider + 1);
+      ctx.strokeStyle = dark ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.4)';
+      ctx.lineWidth = b.solid ? 3 : 2;
+      if (b.solid) {
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.moveTo(x, b.y);
+        ctx.lineTo(x, b.y + b.height);
+        ctx.stroke();
+      } else {
+        ctx.setLineDash([12, 18]);
+        ctx.beginPath();
+        ctx.moveTo(x, b.y);
+        ctx.lineTo(x, b.y + b.height);
+        ctx.stroke();
+        ctx.setLineDash([]);
       }
-      ctx.stroke();
     }
-    ctx.setLineDash([]);
 
     ctx.strokeStyle = dark ? '#1b5e20' : '#2e7d32';
     ctx.lineWidth = 3;
@@ -1089,7 +1173,19 @@ class Game {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      if (item.animal && item.isReward) {
+      if (item.fruit === 'good') {
+        ctx.shadowColor = '#4caf50';
+        ctx.shadowBlur = 14;
+      } else if (item.fruit === 'bad') {
+        ctx.shadowColor = '#f44336';
+        ctx.shadowBlur = 14;
+      } else if (item.drink && item.isReward) {
+        ctx.shadowColor = '#29b6f6';
+        ctx.shadowBlur = 12;
+      } else if (item.drink && !item.isReward) {
+        ctx.shadowColor = '#ff7043';
+        ctx.shadowBlur = 12;
+      } else if (item.animal && item.isReward) {
         ctx.shadowColor = '#06d6a0';
         ctx.shadowBlur = 16;
       } else if (item.animal && !item.isReward) {
@@ -1152,6 +1248,34 @@ class Game {
       ctx.lineWidth = 2;
       ctx.stroke();
       ctx.shadowBlur = 0;
+    }
+
+    if (this.combo >= 3 && Date.now() - this.lastDodge < 2000) {
+      const t = Date.now() * 0.003;
+      const level = Math.min(this.combo, 15);
+      const glow = 8 + level * 3;
+      const pulse = 0.7 + Math.sin(t * 2) * 0.3;
+      const hue = (t * 60) % 360;
+      ctx.shadowColor = `hsl(${hue}, 100%, 60%)`;
+      ctx.shadowBlur = glow * pulse;
+
+      const sparkCount = Math.min(level, 10);
+      for (let s = 0; s < sparkCount; s++) {
+        const angle = t * 3 + (s / sparkCount) * Math.PI * 2;
+        const radius = 30 + Math.sin(t * 4 + s) * 8;
+        const sx = Math.cos(angle) * radius;
+        const sy = Math.sin(angle) * radius - 10;
+        const size = 2 + Math.sin(t * 5 + s * 2) * 1.5;
+        ctx.fillStyle = `hsla(${(hue + s * 30) % 360}, 100%, 70%, ${0.6 + Math.sin(t * 6 + s) * 0.4})`;
+        ctx.beginPath();
+        ctx.arc(sx, sy, size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.beginPath();
+      ctx.arc(0, -10, 35, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${hue}, 100%, 70%, ${0.06 * pulse})`;
+      ctx.fill();
     }
 
     ctx.fillStyle = dark ? '#444' : '#333';
