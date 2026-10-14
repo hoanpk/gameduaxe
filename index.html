@@ -397,10 +397,19 @@ let audioCtx = null;
 let soundEnabled = false;
 
 function ensureAudio() {
-  if (!audioCtx) audioCtx = new AudioCtx();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-  soundEnabled = true;
-  document.getElementById('sound-btn').textContent = '🔊';
+  try {
+    if (!audioCtx) audioCtx = new AudioCtx();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const silent = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    g.gain.value = 0;
+    silent.connect(g);
+    g.connect(audioCtx.destination);
+    silent.start();
+    silent.stop(audioCtx.currentTime + 0.01);
+    soundEnabled = true;
+    document.getElementById('sound-btn').textContent = '🔊';
+  } catch(e) {}
 }
 
 function playTone(freq, duration, type, vol) {
@@ -600,11 +609,18 @@ CHARS.forEach((c, i) => {
 
 startBtn.addEventListener('click', () => {
   if (selectedChar === null) return;
+  if (!audioCtx) ensureAudio();
+  startGame();
+});
+startBtn.addEventListener('touchend', (e) => {
+  if (selectedChar === null) return;
+  e.preventDefault();
+  if (!audioCtx) ensureAudio();
   startGame();
 });
 
 const soundToggle = document.getElementById('sound-toggle');
-soundToggle.addEventListener('click', () => {
+function handleSoundToggle() {
   if (!audioCtx) {
     ensureAudio();
     SFX.select();
@@ -622,7 +638,9 @@ soundToggle.addEventListener('click', () => {
       soundToggle.style.borderColor = 'var(--card-border)';
     }
   }
-});
+}
+soundToggle.addEventListener('click', handleSoundToggle);
+soundToggle.addEventListener('touchend', (e) => { e.preventDefault(); handleSoundToggle(); });
 
 const soundBtn = document.getElementById('sound-btn');
 const exitBtn = document.getElementById('exit-btn');
@@ -660,7 +678,7 @@ pauseBtn.addEventListener('click', () => {
 
 exitBtn.addEventListener('click', exitToMenu);
 
-soundBtn.addEventListener('click', () => {
+function handleSoundBtn() {
   if (!audioCtx) {
     ensureAudio();
     SFX.start();
@@ -669,7 +687,9 @@ soundBtn.addEventListener('click', () => {
     soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
     if (soundEnabled && audioCtx.state === 'suspended') audioCtx.resume();
   }
-});
+}
+soundBtn.addEventListener('click', handleSoundBtn);
+soundBtn.addEventListener('touchend', (e) => { e.preventDefault(); handleSoundBtn(); });
 
 class Game {
   constructor(charData) {
