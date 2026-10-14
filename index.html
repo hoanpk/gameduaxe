@@ -19,7 +19,7 @@
   --hp-bad: #ef476f;
   --card-bg: #16213e;
   --card-border: #0f3460;
-  --overlay: rgba(10, 10, 30, 0.92);
+  --overlay: rgb(10, 10, 30);
   color-scheme: dark;
 }
 @media (prefers-color-scheme: light) {
@@ -34,7 +34,7 @@
     --hp-bad: #d63a5c;
     --card-bg: #fff8ee;
     --card-border: #ddd5c4;
-    --overlay: rgba(240, 236, 226, 0.94);
+    --overlay: rgb(240, 236, 226);
     color-scheme: light;
   }
 }
@@ -49,7 +49,7 @@
   --hp-bad: #d63a5c;
   --card-bg: #fff8ee;
   --card-border: #ddd5c4;
-  --overlay: rgba(240, 236, 226, 0.94);
+  --overlay: rgb(240, 236, 226);
   color-scheme: light;
 }
 
@@ -1501,6 +1501,7 @@ class Game {
     this.stop();
     SFX.gameover();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    document.querySelectorAll('.combo-popup').forEach(el => el.remove());
     hud.style.display = 'none';
     gameBtns.style.display = 'none';
     gameoverScreen.style.display = 'flex';
