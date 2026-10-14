@@ -1278,81 +1278,154 @@ class Game {
       ctx.fill();
     }
 
-    ctx.fillStyle = dark ? '#444' : '#333';
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
     ctx.beginPath();
-    ctx.ellipse(0, 25, 18, 8, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 30, 22, 6, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = dark ? '#e74c3c' : '#c0392b';
+    ctx.fillStyle = '#111';
     ctx.beginPath();
-    ctx.moveTo(-15, 10);
-    ctx.lineTo(15, 10);
-    ctx.lineTo(12, -15);
-    ctx.lineTo(-8, -15);
+    ctx.arc(-16, 22, 9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.arc(16, 22, 9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#444';
+    ctx.beginPath();
+    ctx.arc(-16, 22, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(16, 22, 5, 0, Math.PI * 2);
+    ctx.fill();
+    const wheelSpin = Date.now() * 0.02;
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 1;
+    for (const wx of [-16, 16]) {
+      for (let s = 0; s < 4; s++) {
+        const a = wheelSpin + s * Math.PI / 2;
+        ctx.beginPath();
+        ctx.moveTo(wx, 22);
+        ctx.lineTo(wx + Math.cos(a) * 5, 22 + Math.sin(a) * 5);
+        ctx.stroke();
+      }
+    }
+
+    ctx.fillStyle = dark ? '#e53935' : '#c62828';
+    ctx.beginPath();
+    ctx.moveTo(-20, 18);
+    ctx.lineTo(20, 18);
+    ctx.lineTo(22, 5);
+    ctx.lineTo(18, -8);
+    ctx.lineTo(-14, -8);
+    ctx.lineTo(-22, 5);
     ctx.closePath();
     ctx.fill();
 
-    ctx.fillStyle = dark ? '#555' : '#444';
-    ctx.fillRect(-4, 10, 8, 18);
-
-    ctx.fillStyle = '#222';
+    ctx.fillStyle = dark ? '#ef5350' : '#d32f2f';
     ctx.beginPath();
-    ctx.arc(-15, 28, 10, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(12, 28, 10, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#666';
-    ctx.beginPath();
-    ctx.arc(-15, 28, 5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(12, 28, 5, 0, Math.PI * 2);
+    ctx.moveTo(-18, 5);
+    ctx.lineTo(18, 5);
+    ctx.lineTo(20, 18);
+    ctx.lineTo(-20, 18);
+    ctx.closePath();
     ctx.fill();
 
-    ctx.fillStyle = '#ffcc00';
+    ctx.fillStyle = dark ? '#b71c1c' : '#a31515';
     ctx.beginPath();
-    ctx.arc(0, -17, 5, Math.PI, 0);
+    ctx.moveTo(-22, 6);
+    ctx.lineTo(-20, 18);
+    ctx.lineTo(-24, 16);
+    ctx.closePath();
     ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(22, 6);
+    ctx.lineTo(20, 18);
+    ctx.lineTo(24, 16);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(100,180,255,0.5)';
+    ctx.beginPath();
+    ctx.moveTo(-12, -7);
+    ctx.lineTo(12, -7);
+    ctx.lineTo(10, -1);
+    ctx.lineTo(-10, -1);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+
+    ctx.fillStyle = dark ? '#333' : '#222';
+    ctx.beginPath();
+    ctx.moveTo(-14, -8);
+    ctx.lineTo(18, -8);
+    ctx.lineTo(14, -14);
+    ctx.lineTo(-10, -14);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#ffeb3b';
+    ctx.beginPath();
+    ctx.moveTo(18, 8);
+    ctx.lineTo(23, 10);
+    ctx.lineTo(23, 14);
+    ctx.lineTo(18, 14);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#f44336';
+    ctx.beginPath();
+    ctx.moveTo(-18, 8);
+    ctx.lineTo(-23, 10);
+    ctx.lineTo(-23, 14);
+    ctx.lineTo(-18, 14);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = dark ? '#777' : '#555';
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(0, -8);
+    ctx.lineTo(0, 18);
+    ctx.stroke();
 
     const charImg = charImages[selectedChar];
     if (charImg && charImg.complete && charImg.naturalWidth > 0) {
       ctx.save();
       ctx.beginPath();
-      ctx.arc(0, -38, 18, 0, Math.PI * 2);
+      ctx.arc(0, -22, 14, 0, Math.PI * 2);
       ctx.closePath();
       ctx.clip();
-      ctx.drawImage(charImg, -18, -56, 36, 36);
+      ctx.drawImage(charImg, -14, -36, 28, 28);
       ctx.restore();
 
       ctx.beginPath();
-      ctx.arc(0, -38, 18, 0, Math.PI * 2);
+      ctx.arc(0, -22, 14, 0, Math.PI * 2);
       ctx.strokeStyle = dark ? '#ffd166' : '#d4a843';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1.5;
       ctx.stroke();
     } else {
       ctx.fillStyle = dark ? '#ffd166' : '#d4a843';
       ctx.beginPath();
-      ctx.arc(0, -38, 16, 0, Math.PI * 2);
+      ctx.arc(0, -22, 12, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = '#333';
-      ctx.font = '12px serif';
+      ctx.font = '10px serif';
       ctx.textAlign = 'center';
-      ctx.fillText('😀', 0, -34);
+      ctx.fillText('😀', 0, -19);
     }
 
     if (this.duckAmount > 0) {
       ctx.fillStyle = dark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
       ctx.font = '10px "Be Vietnam Pro"';
       ctx.textAlign = 'center';
-      ctx.fillText('CÚI', 0, -60 / bikeScale);
+      ctx.fillText('CÚI', 0, -45 / bikeScale);
     }
 
     if (this.jumpY > 20) {
       ctx.fillStyle = dark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
       ctx.font = '10px "Be Vietnam Pro"';
       ctx.textAlign = 'center';
-      ctx.fillText('BAY', 0, 50 / bikeScale);
+      ctx.fillText('BAY', 0, 45 / bikeScale);
     }
 
     ctx.restore();
