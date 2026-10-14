@@ -1513,6 +1513,7 @@ class Game {
     this.stop();
     if (engineTimer) { clearInterval(engineTimer); engineTimer = null; }
     SFX.gameover();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     hud.style.display = 'none';
     gameBtns.style.display = 'none';
     gameoverScreen.style.display = 'flex';
