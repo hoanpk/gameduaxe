@@ -11,7 +11,7 @@
 :root {
   --bg: #1a1a2e;
   --fg: #e8e8f0;
-  --road: #2d2d44;
+  --road: #2a5e2a;
   --accent: #ff6b35;
   --accent2: #ffd166;
   --hp-good: #06d6a0;
@@ -26,7 +26,7 @@
   :root:not([data-theme="dark"]) {
     --bg: #f0ece2;
     --fg: #1a1a2e;
-    --road: #c4bfa8;
+    --road: #5fad50;
     --accent: #e85d26;
     --accent2: #d4a843;
     --hp-good: #05b88a;
@@ -41,7 +41,7 @@
 :root[data-theme="light"] {
   --bg: #f0ece2;
   --fg: #1a1a2e;
-  --road: #c4bfa8;
+  --road: #5fad50;
   --accent: #e85d26;
   --accent2: #d4a843;
   --hp-good: #05b88a;
@@ -463,8 +463,6 @@ const REWARDS = [
   { type: 'heart', emoji: '❤️', w: 30, h: 30, heal: 20, desc: '+20 HP' },
   { type: 'shield', emoji: '🛡️', w: 30, h: 30, heal: 0, shield: 3000, desc: 'Bất tử 3s' },
   { type: 'star', emoji: '⭐', w: 28, h: 28, heal: 0, score: 500, desc: '+500 điểm' },
-  { type: 'wrench', emoji: '🔧', w: 28, h: 28, heal: 35, desc: '+35 HP' },
-  { type: 'fuel', emoji: '⛽', w: 30, h: 30, heal: 15, desc: '+15 HP' },
 ];
 
 const FIERCE_ANIMALS = [
@@ -1006,16 +1004,26 @@ class Game {
     const rootTheme = document.documentElement.getAttribute('data-theme');
     const dark = rootTheme === 'dark' || (rootTheme !== 'light' && isDark);
 
-    ctx.fillStyle = dark ? '#1a1a2e' : '#7a9e6a';
+    ctx.fillStyle = dark ? '#1a3a1a' : '#4a8c3f';
     ctx.fillRect(0, 0, this.w, this.h);
+
+    for (let y = -40 + this.roadOffset; y < this.h + 40; y += 40) {
+      ctx.fillStyle = dark ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)';
+      ctx.fillRect(0, y, this.w, 20);
+    }
 
     const roadL = this.roadL;
     const roadR = this.roadR;
     const roadW = this.roadW;
-    ctx.fillStyle = dark ? '#2d2d44' : '#555555';
+    ctx.fillStyle = dark ? '#2a5e2a' : '#5fad50';
     ctx.fillRect(roadL, 0, roadW, this.h);
 
-    ctx.strokeStyle = dark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.15)';
+    for (let y = -40 + this.roadOffset; y < this.h + 40; y += 40) {
+      ctx.fillStyle = dark ? 'rgba(0,0,0,0.06)' : 'rgba(0,0,0,0.05)';
+      ctx.fillRect(roadL, y, roadW, 20);
+    }
+
+    ctx.strokeStyle = dark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.1)';
     ctx.lineWidth = 2;
     ctx.setLineDash([20, 20]);
     for (let i = 1; i < 3; i++) {
@@ -1029,7 +1037,7 @@ class Game {
     }
     ctx.setLineDash([]);
 
-    ctx.strokeStyle = dark ? '#ff6b35' : '#e85d26';
+    ctx.strokeStyle = dark ? '#3d7a3d' : '#3a7a2e';
     ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.moveTo(roadL, 0);
