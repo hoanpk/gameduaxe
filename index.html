@@ -9,9 +9,9 @@
 <body>
 <style>
 :root {
-  --bg: #1a1a2e;
+  --bg: #1b5e20;
   --fg: #e8e8f0;
-  --road: #2a5e2a;
+  --road: #256427;
   --accent: #ff6b35;
   --accent2: #ffd166;
   --hp-good: #06d6a0;
@@ -26,7 +26,7 @@
   :root:not([data-theme="dark"]) {
     --bg: #f0ece2;
     --fg: #1a1a2e;
-    --road: #5fad50;
+    --road: #4caf50;
     --accent: #e85d26;
     --accent2: #d4a843;
     --hp-good: #05b88a;
@@ -41,7 +41,7 @@
 :root[data-theme="light"] {
   --bg: #f0ece2;
   --fg: #1a1a2e;
-  --road: #5fad50;
+  --road: #4caf50;
   --accent: #e85d26;
   --accent2: #d4a843;
   --hp-good: #05b88a;
@@ -1004,41 +1004,69 @@ class Game {
     const rootTheme = document.documentElement.getAttribute('data-theme');
     const dark = rootTheme === 'dark' || (rootTheme !== 'light' && isDark);
 
-    ctx.fillStyle = dark ? '#1a3a1a' : '#4a8c3f';
+    ctx.fillStyle = dark ? '#1b5e20' : '#2e7d32';
     ctx.fillRect(0, 0, this.w, this.h);
 
-    for (let y = -40 + this.roadOffset; y < this.h + 40; y += 40) {
-      ctx.fillStyle = dark ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)';
-      ctx.fillRect(0, y, this.w, 20);
+    const grassOff = this.roadOffset;
+    ctx.save();
+    for (let y = -60 + (grassOff % 30); y < this.h + 30; y += 30) {
+      for (let x = 0; x < this.w; x += 18) {
+        const seed = (x * 73 + y * 137) & 0xff;
+        if (seed > 140) continue;
+        const shade = seed % 3;
+        ctx.fillStyle = dark
+          ? ['#2e7d32','#388e3c','#1b5e20'][shade]
+          : ['#43a047','#66bb6a','#2e7d32'][shade];
+        const bh = 6 + (seed % 5);
+        const lean = ((seed % 7) - 3) * 0.8;
+        ctx.beginPath();
+        ctx.moveTo(x, y + bh);
+        ctx.quadraticCurveTo(x + lean, y, x + 2, y + bh);
+        ctx.fill();
+      }
     }
+    ctx.restore();
 
     const roadL = this.roadL;
     const roadR = this.roadR;
     const roadW = this.roadW;
-    ctx.fillStyle = dark ? '#2a5e2a' : '#5fad50';
+
+    ctx.fillStyle = dark ? '#256427' : '#4caf50';
     ctx.fillRect(roadL, 0, roadW, this.h);
 
-    for (let y = -40 + this.roadOffset; y < this.h + 40; y += 40) {
-      ctx.fillStyle = dark ? 'rgba(0,0,0,0.06)' : 'rgba(0,0,0,0.05)';
-      ctx.fillRect(roadL, y, roadW, 20);
+    for (let y = -60 + (grassOff % 24); y < this.h + 30; y += 24) {
+      for (let x = roadL; x < roadR; x += 14) {
+        const seed = (x * 59 + y * 113) & 0xff;
+        if (seed > 120) continue;
+        const shade = seed % 4;
+        ctx.fillStyle = dark
+          ? ['#2e7d32','#388e3c','#43a047','#1b5e20'][shade]
+          : ['#66bb6a','#81c784','#4caf50','#43a047'][shade];
+        const bh = 5 + (seed % 4);
+        const lean = ((seed % 5) - 2) * 0.6;
+        ctx.beginPath();
+        ctx.moveTo(x, y + bh);
+        ctx.quadraticCurveTo(x + lean, y, x + 1.5, y + bh);
+        ctx.fill();
+      }
     }
 
-    ctx.strokeStyle = dark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.1)';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([20, 20]);
+    ctx.strokeStyle = dark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([15, 25]);
     for (let i = 1; i < 3; i++) {
       const x = roadL + (roadW / 3) * i;
       ctx.beginPath();
-      for (let y = -40 + this.roadOffset; y < this.h + 40; y += 40) {
+      for (let y = -40 + grassOff; y < this.h + 40; y += 40) {
         ctx.moveTo(x, y);
-        ctx.lineTo(x, y + 20);
+        ctx.lineTo(x, y + 15);
       }
       ctx.stroke();
     }
     ctx.setLineDash([]);
 
-    ctx.strokeStyle = dark ? '#3d7a3d' : '#3a7a2e';
-    ctx.lineWidth = 4;
+    ctx.strokeStyle = dark ? '#1b5e20' : '#2e7d32';
+    ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(roadL, 0);
     ctx.lineTo(roadL, this.h);
